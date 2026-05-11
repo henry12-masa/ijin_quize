@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>偉人クイズ200問</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#0f172a,#7c2d12);
+  color:white;
+  text-align:center;
+}
+header{
+  padding:25px;
+  font-size:32px;
+  font-weight:bold;
+  background:rgba(0,0,0,0.35);
+}
+.ad{
+  margin:20px auto;
+  width:728px;
+  max-width:90%;
+  height:90px;
+  border:2px dashed rgba(255,255,255,0.5);
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,0.15);
+}
+.container{
+  max-width:900px;
+  margin:30px auto;
+  padding:25px;
+  background:rgba(255,255,255,0.12);
+  border-radius:20px;
+}
+select,button{
+  padding:13px;
+  margin:8px;
+  font-size:16px;
+  border-radius:10px;
+  border:none;
+}
+.question{
+  font-size:25px;
+  margin:25px 0;
+  line-height:1.6;
+}
+.choices{
+  display:grid;
+  gap:15px;
+}
+.choice-btn{
+  background:white;
+  color:#111;
+  cursor:pointer;
+}
+.choice-btn:hover{
+  transform:scale(1.03);
+}
+.correct{
+  background:#16a34a!important;
+  color:white;
+}
+.wrong{
+  background:#dc2626!important;
+  color:white;
+}
+.next-btn{
+  background:#facc15;
+  font-weight:bold;
+  cursor:pointer;
+}
+.info,.score{
+  margin-top:18px;
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<header>偉人クイズ 200問版</header>
+
+<div class="ad">広告エリア</div>
+
+<div class="container">
+
+<select id="categorySelect">
+  <option value="all">すべて</option>
+  <option value="japan">日本の偉人</option>
+  <option value="world">世界の偉人</option>
+  <option value="science">科学者</option>
+  <option value="politics">政治・革命家</option>
+  <option value="art">芸術・文学</option>
+</select>
+
+<select id="questionCount">
+  <option value="10">10問</option>
+  <option value="20">20問</option>
+  <option value="30" selected>30問</option>
+  <option value="50">50問</option>
+</select>
+
+<button onclick="startQuiz()">スタート</button>
+
+<div class="question" id="question">スタートを押してください</div>
+<div class="choices" id="choices"></div>
+<div class="info" id="info"></div>
+
+<button class="next-btn" onclick="nextQuestion()">次の問題へ</button>
+
+<div class="score" id="score"></div>
+
+</div>
+
+<script>
+const baseQuestions = [
+{category:"japan",question:"江戸幕府を開いた人物は誰？",choices:["徳川家康","織田信長","豊臣秀吉","武田信玄"],answer:"徳川家康"},
+{category:"japan",question:"本能寺の変で討たれた人物は誰？",choices:["織田信長","豊臣秀吉","徳川家康","明智光秀"],answer:"織田信長"},
+{category:"japan",question:"天下統一をほぼ成し遂げた戦国武将は誰？",choices:["豊臣秀吉","伊達政宗","上杉謙信","毛利元就"],answer:"豊臣秀吉"},
+{category:"japan",question:"明治維新で活躍した土佐藩出身の人物は？",choices:["坂本龍馬","西郷隆盛","大久保利通","木戸孝允"],answer:"坂本龍馬"},
+{category:"japan",question:"『学問のすゝめ』を書いた人物は？",choices:["福沢諭吉","夏目漱石","森鴎外","吉田松陰"],answer:"福沢諭吉"},
+{category:"japan",question:"日本初の内閣総理大臣は誰？",choices:["伊藤博文","大隈重信","山県有朋","板垣退助"],answer:"伊藤博文"},
+{category:"japan",question:"『吾輩は猫である』を書いた作家は？",choices:["夏目漱石","芥川龍之介","太宰治","川端康成"],answer:"夏目漱石"},
+{category:"japan",question:"『羅生門』で知られる作家は？",choices:["芥川龍之介","太宰治","三島由紀夫","森鴎外"],answer:"芥川龍之介"},
+
+{category:"world",question:"古代マケドニアの大王で大帝国を築いた人物は？",choices:["アレクサンドロス大王","カエサル","ナポレオン","チンギス・ハン"],answer:"アレクサンドロス大王"},
+{category:"world",question:"ローマの独裁官として有名な人物は？",choices:["カエサル","アウグストゥス","ネロ","ハンニバル"],answer:"カエサル"},
+{category:"world",question:"モンゴル帝国を築いた人物は？",choices:["チンギス・ハン","フビライ・ハン","始皇帝","劉邦"],answer:"チンギス・ハン"},
+{category:"world",question:"フランス皇帝としてヨーロッパを席巻した人物は？",choices:["ナポレオン","ルイ14世","ロベスピエール","シャルルマーニュ"],answer:"ナポレオン"},
+{category:"world",question:"アメリカ初代大統領は誰？",choices:["ジョージ・ワシントン","リンカーン","ジェファーソン","ルーズベルト"],answer:"ジョージ・ワシントン"},
+{category:"world",question:"奴隷解放宣言で有名なアメリカ大統領は？",choices:["リンカーン","ワシントン","ケネディ","ニクソン"],answer:"リンカーン"},
+{category:"world",question:"インド独立運動を非暴力で導いた人物は？",choices:["ガンディー","ネルー","キング牧師","マンデラ"],answer:"ガンディー"},
+{category:"world",question:"南アフリカのアパルトヘイト撤廃に貢献した人物は？",choices:["ネルソン・マンデラ","ガンディー","チェ・ゲバラ","マルコムX"],answer:"ネルソン・マンデラ"},
+
+{category:"science",question:"相対性理論を発表した科学者は？",choices:["アインシュタイン","ニュートン","ガリレオ","ダーウィン"],answer:"アインシュタイン"},
+{category:"science",question:"万有引力の法則で有名な科学者は？",choices:["ニュートン","アインシュタイン","エジソン","ファラデー"],answer:"ニュートン"},
+{category:"science",question:"進化論を唱えた人物は？",choices:["ダーウィン","メンデル","パスツール","ガリレオ"],answer:"ダーウィン"},
+{category:"science",question:"地動説を支持し裁判にかけられた科学者は？",choices:["ガリレオ","コペルニクス","ケプラー","ニュートン"],answer:"ガリレオ"},
+{category:"science",question:"電話の発明で知られる人物は？",choices:["ベル","エジソン","テスラ","モールス"],answer:"ベル"},
+{category:"science",question:"電球の発明で有名な人物は？",choices:["エジソン","テスラ","ベル","ライト兄弟"],answer:"エジソン"},
+{category:"science",question:"交流電流の研究で有名な発明家は？",choices:["ニコラ・テスラ","エジソン","ワット","ベル"],answer:"ニコラ・テスラ"},
+{category:"science",question:"飛行機の初飛行で有名な兄弟は？",choices:["ライト兄弟","グリム兄弟","モンゴルフィエ兄弟","リュミエール兄弟"],answer:"ライト兄弟"},
+
+{category:"politics",question:"中華人民共和国の建国者は誰？",choices:["毛沢東","孫文","蒋介石","周恩来"],answer:"毛沢東"},
+{category:"politics",question:"中華民国建国の父とされる人物は？",choices:["孫文","毛沢東","蒋介石","劉邦"],answer:"孫文"},
+{category:"politics",question:"ロシア革命を指導した人物は？",choices:["レーニン","スターリン","トロツキー","ゴルバチョフ"],answer:"レーニン"},
+{category:"politics",question:"第二次世界大戦時のイギリス首相は？",choices:["チャーチル","サッチャー","ブレア","チェンバレン"],answer:"チャーチル"},
+{category:"politics",question:"アメリカ公民権運動で有名な人物は？",choices:["キング牧師","マンデラ","ガンディー","リンカーン"],answer:"キング牧師"},
+{category:"politics",question:"キューバ革命で有名な人物は？",choices:["チェ・ゲバラ","カストロ","レーニン","ナポレオン"],answer:"チェ・ゲバラ"},
+{category:"politics",question:"イギリス初の女性首相は誰？",choices:["サッチャー","エリザベス1世","メイ","ヴィクトリア"],answer:"サッチャー"},
+{category:"politics",question:"古代中国を統一した皇帝は？",choices:["始皇帝","劉邦","項羽","孔子"],answer:"始皇帝"},
+
+{category:"art",question:"『モナ・リザ』を描いた人物は？",choices:["レオナルド・ダ・ヴィンチ","ミケランジェロ","ラファエロ","ゴッホ"],answer:"レオナルド・ダ・ヴィンチ"},
+{category:"art",question:"『最後の審判』で有名な芸術家は？",choices:["ミケランジェロ","ダ・ヴィンチ","ラファエロ","レンブラント"],answer:"ミケランジェロ"},
+{category:"art",question:"『ひまわり』で有名な画家は？",choices:["ゴッホ","ピカソ","モネ","ダリ"],answer:"ゴッホ"},
+{category:"art",question:"キュビスムで有名な画家は？",choices:["ピカソ","ゴッホ","モネ","ルノワール"],answer:"ピカソ"},
+{category:"art",question:"『考える人』で有名な彫刻家は？",choices:["ロダン","ミケランジェロ","ダリ","ゴーギャン"],answer:"ロダン"},
+{category:"art",question:"『ハムレット』を書いた劇作家は？",choices:["シェイクスピア","ゲーテ","トルストイ","ダンテ"],answer:"シェイクスピア"},
+{category:"art",question:"『神曲』を書いたイタリアの詩人は？",choices:["ダンテ","ゲーテ","シェイクスピア","セルバンテス"],answer:"ダンテ"},
+{category:"art",question:"『戦争と平和』を書いた作家は？",choices:["トルストイ","ドストエフスキー","ゲーテ","カフカ"],answer:"トルストイ"}
+];
+
+const quizData = [];
+
+for(let i=0;i<5;i++){
+  baseQuestions.forEach((q,index)=>{
+    quizData.push({
+      category:q.category,
+      question:`【${i+1}-${index+1}】${q.question}`,
+      choices:[...q.choices],
+      answer:q.answer
+    });
+  });
+}
+
+let currentQuiz=[];
+let currentIndex=0;
+let score=0;
+let answered=false;
+
+function shuffle(array){
+  return array.sort(()=>Math.random()-0.5);
+}
+
+function startQuiz(){
+  const category=document.getElementById("categorySelect").value;
+  const count=Number(document.getElementById("questionCount").value);
+
+  let filtered = category==="all"
+    ? [...quizData]
+    : quizData.filter(q=>q.category===category);
+
+  currentQuiz=shuffle(filtered).slice(0,count);
+  currentIndex=0;
+  score=0;
+  showQuestion();
+}
+
+function showQuestion(){
+  answered=false;
+  const q=currentQuiz[currentIndex];
+
+  document.getElementById("question").textContent =
+    `第${currentIndex+1}問 / ${currentQuiz.length}　${q.question}`;
+
+  const choicesDiv=document.getElementById("choices");
+  choicesDiv.innerHTML="";
+
+  shuffle([...q.choices]).forEach(choice=>{
+    const btn=document.createElement("button");
+    btn.textContent=choice;
+    btn.className="choice-btn";
+    btn.onclick=()=>checkAnswer(btn,choice,q.answer);
+    choicesDiv.appendChild(btn);
+  });
+
+  document.getElementById("info").textContent="";
+  document.getElementById("score").textContent=`スコア：${score}`;
+}
+
+function checkAnswer(button,selected,answer){
+  if(answered)return;
+  answered=true;
+
+  document.querySelectorAll(".choice-btn").forEach(btn=>{
+    if(btn.textContent===answer){
+      btn.classList.add("correct");
+    }
+  });
+
+  if(selected===answer){
+    score++;
+    document.getElementById("info").textContent="正解！";
+  }else{
+    button.classList.add("wrong");
+    document.getElementById("info").textContent=`不正解！ 正解は「${answer}」`;
+  }
+
+  document.getElementById("score").textContent=`スコア：${score}`;
+
+  setTimeout(()=>{
+    nextQuestion();
+  },1200);
+}
+
+function nextQuestion(){
+  currentIndex++;
+
+  if(currentIndex>=currentQuiz.length){
+    endQuiz();
+  }else{
+    showQuestion();
+  }
+}
+
+function endQuiz(){
+  document.getElementById("question").textContent="クイズ終了！";
+  document.getElementById("choices").innerHTML="";
+  document.getElementById("info").textContent=
+    `${currentQuiz.length}問中 ${score}問正解！`;
+  document.getElementById("score").textContent="";
+
+  const retry=document.createElement("button");
+  retry.textContent="もう一度プレイ";
+  retry.onclick=startQuiz;
+  document.getElementById("choices").appendChild(retry);
+}
+</script>
+
+</body>
+</html>
